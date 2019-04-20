@@ -1,0 +1,79 @@
+<html>
+<head>
+ <title>DATA 608: Module 6</title>
+	<script src="https://d3js.org/d3.v4.min.js"></script>
+</head>
+
+<!-- form to enter a string-->
+<body>
+
+<h2>1. Create a function to reverse any word that you type in. </h2>
+
+<p>
+<form name = 'ReverseForm'>
+    <input type = "text" size ="12" name = "raw">
+    <input type = "button" value ="Reverse" onClick = print_result()>
+</form>
+</p>
+
+<!-- create a div to display the result-->
+<div id ="reverse_answer"></div>
+
+<!--two functions, one to reverse the string, one to print the string onClick-->>
+<script type="text/javascript">
+function reverse(string) {  
+    var output = '';
+        output = string.split('').reverse().join('');
+        return output
+    
+    
+};
+function print_result() {
+    var target = document.getElementById("reverse_answer");
+    target.innerHTML = reverse(document.ReverseForm.raw.value);
+    
+};
+</script>
+
+<h2>2. Create a function that takes an inpute number, and print a table with the first 20 multiples of the number, in order to make 5x4. </h2>
+
+<!--form to enter a number-->
+<p>
+<form name ='Table'>
+    <input type = "number" name = 'raw2'>
+    <input type = "button" value= "create table" onClick=print_result2()>
+</form>
+</p>
+
+<!--Create a div to displat the result-->
+<div id = "Q2_answer"></div>
+
+<script type="text/javascript">
+function multiples(count) {
+    q2Array =[];
+    for(i=1; i <= count; i++){
+        q2Array.push(document.Table.raw2.value*(1*i))
+    };
+    return q2Array
+}
+function tableMake(inputArray){
+    var elements = inputArray.length;
+    var outHTML = '<table>';
+    for (i = 0; i < elements; i++){
+        if (i % 4 ==0){outHTML= outHTML +'<tr>'};
+        outHTML = outHTML + '<td>'+ inputArray[i]+ '</td>';
+        if (i % 4 ==4-1){outHTML = outHTML +'</tr>'};
+    };
+    outHTML = outHTML + '</table>';
+    return outHTML
+};
+function print_result2(){
+    var target = document.getElementById ('Q2_answer');
+    target.innerHTML = tableMake(multiples(20))
+};
+</script>
+
+
+
+</body>
+</html>
