@@ -1,0 +1,643 @@
+---
+title: "Data608 Final Project"
+output: html_document
+---
+
+#Is the Congestion Pricing Plan Necessary? 
+
+As a New Yorker, I am always fancinated with the beauty of Manhattan. When I have a day off, I always would like to hang out in the city. However, the transportation is always a problem for me since I live in Long Island. I have tried different ways to get to Manhattan by Long Island Rail Road, which is expensive and have to stick with their schedule, by car, which is a nightmare to find a parking and the traffic is a jam 24/7. Recently, Gov. Andrew M. Cuomo proposed the congestion pricing plan in Manhattan so that NY will become the first American city to charge such fees. The fees are expected to raise money to fix the city's subway system and of course, thin out streets that have become stangled by traffic. 
+
+For my project, I would like to see if the congestion pricing plan is necessary and what kind of imapct it may bring to us, New Yorkers. I found 3 sets of data to help my project. Two of them are from NYC Open Data, and One is from epa.org which is the enviromental open data website.
+
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE}
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+library(plyr)
+library(stringr)
+library(grid)
+library(RColorBrewer)
+library(reshape)
+library(directlabels)
+library(waffle)
+library(extrafont)
+library(gganimate)
+library(gifski)
+
+
+require(knitr)
+require(lubridate)
+
+```
+
+The first thing I want to find out is the quality of enviroment in Manhattan between 2015 and 2018. The data set from epa.org includes annual Air Quality Index(AQI) for each county in each state of U.S. for 2015,2016,2017, and 2018. For my projects, I will focus on 3 categories of AQI, "number of good days","number of Ozone days", and "number of PM 2.5 Days" since these categories will be correlated to the cars' emission. Ozone is closely related to the global warming and PM2.5 would affect human's health negatively.
+```{r,echo=FALSE,warning=FALSE}
+
+AQ15 <- read.csv(file="/Users/xiaomengkong/Desktop/SPS/DATA608/FinalProjectData/airQuality/annual_aqi_by_county_2015.csv")
+kable(head(AQ15))
+nrow(AQ15)
+
+AQ16 <- read.csv(file="/Users/xiaomengkong/Desktop/SPS/DATA608/FinalProjectData/airQuality/annual_aqi_by_county_2016.csv")
+kable(head(AQ16))
+nrow(AQ16)
+
+AQ17 <- read.csv(file="/Users/xiaomengkong/Desktop/SPS/DATA608/FinalProjectData/airQuality/annual_aqi_by_county_2017.csv")
+kable(head(AQ17))
+nrow(AQ17)
+
+AQ18 <- read.csv(file="/Users/xiaomengkong/Desktop/SPS/DATA608/FinalProjectData/airQuality/annual_aqi_by_county_2018.csv")
+kable(head(AQ18))
+nrow(AQ18)
+
+
+
+
+AQ15 %>% summarise(Mean_GoodDays=mean(Good.Days),Mean_MaxAQI = mean(Max.AQI), Mean_MedianAQI = mean(Median.AQI), Mean_DaysOzone=mean(Days.Ozone), Mean_DaysPM25 = mean(Days.PM2.5))
+
+AQ16 %>% summarise(Mean_GoodDays=mean(Good.Days),Mean_MaxAQI = mean(Max.AQI), Mean_MedianAQI = mean(Median.AQI), Mean_DaysOzone=mean(Days.Ozone), Mean_DaysPM25 = mean(Days.PM2.5))
+
+AQ17 %>% summarise(Mean_GoodDays=mean(Good.Days),Mean_MaxAQI = mean(Max.AQI), Mean_MedianAQI = mean(Median.AQI), Mean_DaysOzone=mean(Days.Ozone), Mean_DaysPM25 = mean(Days.PM2.5))
+
+AQ18 %>% summarise(Mean_GoodDays=mean(Good.Days),Mean_MaxAQI = mean(Max.AQI), Mean_MedianAQI = mean(Median.AQI), Mean_DaysOzone=mean(Days.Ozone), Mean_DaysPM25 = mean(Days.PM2.5))
+
+Year <-c(2015,2016,2017,2018)
+
+AvgAQ_GoodDays <- c(247.7757,258.2799,260.5994,161.2418)
+
+
+AvgAQ_MaxAQI <- c(118.4288,118.7723,122.4543,106.6118)
+AvgAQ_MedAQI <- c(35.95193,34.94213,35.55325,36.34586)
+
+AvgAQ_DaysOzone <- c(166.9906,177.2581,176.2581,120.2293)
+
+AvgAQ_DaysPM25 <- c(113.8794,106.7277,111.5212,62.22254)
+
+AvgAQ <- data.frame(Year,AvgAQ_GoodDays,AvgAQ_MaxAQI,AvgAQ_MedAQI,AvgAQ_DaysOzone,AvgAQ_DaysPM25)
+AvgAQ
+```
+
+```{r,echo=FALSE,warning=FALSE}
+AQ15NY <- AQ15 %>% filter (County=="New York")
+
+
+AQ16NY <- AQ16 %>% filter (County=="New York")
+
+
+AQ17NY <- AQ17 %>% filter (County=="New York")
+
+
+AQ18NY <- AQ18 %>% filter (County=="New York")
+
+
+AQNY <- rbind(AQ15NY,AQ16NY,AQ17NY,AQ18NY)
+kable(AQNY)
+
+AQNY_Final <- cbind(AQNY,AvgAQ_GoodDays,AvgAQ_MaxAQI,AvgAQ_MedAQI,AvgAQ_DaysOzone,AvgAQ_DaysPM25)
+
+```
+
+
+
+
+
+
+
+From the following graph, we can tell that the NY's Good days comparing to the average good days of U.S are mostly under the average, except 2017. Ozone days are generally lower than than the average Ozone days. The Ozone Actiond Days are days when high temperatures and air pollution combine to form high levels of ground level ozone. The main reason behind the lower Ozone days than the average, I think weather plays an important role. NY is cold in general, summer may only last 3 months or so. However, if we look at the number of days of PM 2.5 in NY, it is way higher than the average national rate. PM2.5 primarly come from car, trick, bus and off-road vehicle. The high density of the population and number of vehicles in NY may cause such a high number. PM2.5 is harmful for health and the data may support the idea of the Congestion Pricing plans from enviromental perspective. 
+
+
+```{r,echo=FALSE,warning=FALSE}
+ggplot(AQNY_Final, aes(x=Year, y=Good.Days)) + 
+  geom_point(size=3) + 
+  geom_segment(aes(x=Year, 
+                   xend=Year, 
+                   y=0, 
+                   yend=Good.Days)) + 
+  labs(title="Number of Good days from 2015 to 2018", 
+       subtitle="Total Good days in NY Vs Average Good days in U.S", 
+       caption="source: epa.gov") + 
+  geom_line(data=AQNY_Final,aes(x=Year,y=AvgAQ_GoodDays),color="red")+
+  annotate("text",x=2016.5, xend=2017.5,y=70,yend=100,color="red",size=5,alpha=0.6,label="Average Good days")+
+  theme(axis.text.x = element_text(angle=65, vjust=0.6))
+
+
+
+
+ggplot(AQNY_Final, aes(x=Year, y=Days.Ozone)) + 
+  geom_point(size=3) + 
+  geom_segment(aes(x=Year, 
+                   xend=Year, 
+                   y=0, 
+                   yend=Days.Ozone)) + 
+  labs(title="Number of Ozone days from 2015 to 2018", 
+       subtitle="Total Ozone days in NY Vs Average Ozone days in U.S", 
+       caption="source: epa.gov") + 
+  geom_line(data=AQNY_Final,aes(x=Year,y=AvgAQ_DaysOzone),color="red")+
+  annotate("text",x=2016.5, xend=2017.5,y=70,yend=100,color="red",size=5,alpha=0.6,label="Average Ozone days")+
+  theme(axis.text.x = element_text(angle=65, vjust=0.6))
+
+
+
+ggplot(AQNY_Final, aes(x=Year, y=Days.PM2.5)) + 
+  geom_point(size=3) + 
+  geom_segment(aes(x=Year, 
+                   xend=Year, 
+                   y=0, 
+                   yend=Days.PM2.5)) + 
+  labs(title="Number of Days of PM2.5 from 2015 to 2018", 
+       subtitle="Days of PM2.5 in NY Vs Average Days of PM2.5 in U.S", 
+       caption="source: epa.gov") + 
+  geom_line(data=AQNY_Final,aes(x=Year,y=AvgAQ_DaysPM25),color="red")+
+  annotate("text",x=2016.5, xend=2017.5,y=70,yend=100,color="red",size=5,alpha=0.6,label="Average PM 2.5")+
+  theme(axis.text.x = element_text(angle=65, vjust=0.6))
+
+
+
+
+
+```
+
+Secondly, I use NYC Open data's Traffic Volume Counts from 2014 to 2018 to find the total traffic of October for 2015, 2016, 2017 for each hour. The main reason that I use October 0f 2015, 2016, and 2017's data is that it is incomplete data in 2014 and 2018 which means that, there are some months are NA in these 2 years after I clean up the data. I can only use the common month for the major years but I still get valuable information and learned many different ways to show the data visulization. I googled online to find best ways to show 24 hours data visualzation. I found the clock graph which is very interesting and beautifully present my data. 
+
+Technically, to talk about this visualizaiton themselves, I keep "Less is more" in my mind. At the beginning, I used the very colorful histogram to show the value but I feel the colors are too much and it distracted my attention to the data themselves. So, I changed it into Lolipop graph. which is simple but get the point directly. So from these 3 clock graphs, I can tell the pattern of the hour's traffic. From 0-5 AM, the traffic count is small which is pretty trivial. From 5 AM, the traffic started to pick up and it has a continuously increasing rush hours until 7PM. Considering people come to work in the morning and leave work at night. The data set seems to satisfy our expectation. Basically, the 3 years' October's traffic follows the same pattern. 
+
+Then I compare these 3 years' data sets into one chart. It became challenging since it is not easy to fit 3 of them into 1 graph with bar chart and it also becomes overwhelming by just looking at these 72 bar charts at the same time. So, I googled again and try to find a solution to show the visualization better. Then I find the package of gganimate. It changes my static graph and show each hour of 3 years' data one by one. It becomes so much easier to see the differnce, increase or decrease.It becomes an interesting point for me. In this class, I always keep "Less is more" in my mind. However, this animation opened my mind. It still keep the minimalism but in a different way. Instead of showing everything at one time, showing one thing at a time becomes more clear. 
+
+Back to our graphs, I found that the traffic count of 2015 is actually much higher the other two years'. First reason behind it, I think it is the data collection. There were maybe errors during the data collection. Second of all, I think that is because many people may be aware of the enviroment, the expense of driving cars into city, etc. they may find alternatives to get into city for work or for fun so the traffic counts drop dramatically.
+```{r,echo=FALSE,warning=FALSE}
+traffic <- read.csv(file="/Users/xiaomengkong/Desktop/SPS/DATA608/FinalProjectData/Traffic_Volume_Counts__2014-2018_ (1) (2).csv")
+#kable(head(traffic))
+#nrow(traffic)
+#traffic[,c(8:31)] <- sapply(traffic[,c(8:31)],as.factor)
+#traffic[8:31]<-lapply(traffic[8:31],as.factor)
+colnames(traffic)<- c("ID","Segment_ID","Roadway","From","To","Direction","Date","AM01","AM12","AM23","AM34","AM45","AM56","AM67","AM78","AM89","AM910","AM1011","PM1112","PM1213","PM1314","PM1415","PM1516","PM1617","PM1718","PM1819","PM1920","PM2021","PM2122","PM2223","PM2324")
+
+traffic[,1:7]<-lapply(traffic[1:7],as.character)
+sapply(traffic,typeof)
+
+
+#kable(head(traffic))
+
+
+
+traffic15 <- traffic %>% filter(str_detect(traffic$Date,"2015"))
+#nrow(traffic15)
+#kable(head(traffic15)) #3/7 - 11/22
+#strings <- c("04/01","04/02","04/03","04/04","04/05","04/06","04/07","04/08","04/09","04/10","04/11","04/12","04/13","04/14","04/15")
+strings <- c("^10/")
+traffic15_4_10 <- traffic15 %>% filter(str_detect(traffic15$Date,"^10/"))
+#nrow(traffic15_4_10)
+#kable(head(traffic15_4_10))
+
+#convert to matrix and get sum for each 1 hr interval
+m1 <- as.matrix((traffic15_4_10[8:31]))
+m1<- apply(m1,1,as.numeric)
+m1[is.na(m1)]<- round(mean(m1,na.rm=TRUE),2)
+
+x<-rowSums(m1)
+x_total<-sum(x)
+x_total
+
+
+# Clock graph
+clock.plot <- function (x, col = rainbow(n), ...) {
+  if( min(x)<0 ) x <- x - min(x)
+  if( max(x)>1 ) x <- x/max(x)
+  n <- length(x)
+  if(is.null(names(x))) names(x) <- 0:(n-1)
+  m <- 1.08
+  plot(0, type = 'n', xlim = c(-m,m), ylim = c(-m,m), axes = F, xlab = '', ylab = '', ...)
+  a <- pi/2 - 2*pi/200*0:200
+  polygon( cos(a), sin(a) )
+  v <- .02
+  a <- pi/2 - 2*pi/n*0:n
+  segments( (1+v)*cos(a), (1+v)*sin(a), (1-v)*cos(a), (1-v)*sin(a) )
+  segments( cos(a), sin(a),0, 0, col = 'light grey', lty = 3) 
+  ca <- -2*pi/n*(0:50)/50
+  for (i in 1:n) {
+    a <- pi/2 - 2*pi/n*(i-1)
+    b <- pi/2 - 2*pi/n*i
+    polygon( c(0, x[i]*cos(a+ca), 0), c(0, x[i]*sin(a+ca), 0), col=col[i] )
+    v <- .1
+    text((1+v)*cos(a), (1+v)*sin(a), names(x)[i])
+  }
+}
+ 
+# Use the function on the created data
+clock.plot(x, main = "October's Traffic Count for each hour of 2015 ")
+
+
+
+
+traffic16 <- traffic %>% filter(str_detect(traffic$Date,"2016"))
+#nrow(traffic16)
+#kable(head(traffic16)) # 1/30 -12/4
+
+traffic16_4_10 <- traffic16 %>% filter(str_detect(traffic16$Date,"^10/"))
+#nrow(traffic16_4_10)
+#kable(head(traffic16_4_10))
+#convert to matrix and get sum for each 1 hr interval
+m1 <- as.matrix((traffic16_4_10[8:31]))
+m1<- apply(m1,1,as.numeric)
+m1[is.na(m1)]<- round(mean(m1,na.rm=TRUE),2)
+y<-rowSums(m1)
+
+#clock graph
+# Use the function on the created data
+clock.plot(y, main = "October's Traffic Count for each hour of 2016 ")
+
+traffic17 <- traffic %>% filter(str_detect(traffic$Date,"2017"))
+#nrow(traffic17)
+#kable(head(traffic17)) # 1/14-11/19
+#kable(tail(traffic17))
+
+traffic17_4_10 <- traffic17 %>% filter(str_detect(traffic17$Date,"^10/"))
+#nrow(traffic17_4_10)
+#convert to matrix and get sum for each 1 hr interval
+m1 <- as.matrix((traffic17_4_10[8:31]))
+m1<- apply(m1,1,as.numeric)
+m1[is.na(m1)]<- round(mean(m1,na.rm=TRUE),2)
+z<-rowSums(m1)
+
+#clock graph
+# Use the function on the created data
+clock.plot(z, main = "October's Count for each hour of 2017 ")
+
+
+
+# comparison hourly traffic for 2015, 2016, and 2017
+
+
+Time1 <- factor(c("0-1","1-2","2-3","3-4","4-5","5-6","6-7","7-8","8-9","9-10", "10-11","11-12", "12-13", "13-14", "14-15", "15-16", "16-17", "17-18", "18-19","19-20", "20-21","21-22","22-23","23-24"),levels=c("0-1","1-2","2-3","3-4","4-5","5-6","6-7","7-8","8-9","9-10", "10-11","11-12", "12-13", "13-14", "14-15", "15-16", "16-17", "17-18", "18-19","19-20", "20-21","21-22","22-23","23-24"))
+
+Time <- factor(c("0-1","1-2","2-3","3-4","4-5","5-6","6-7","7-8","8-9","9-10", "10-11","11-12", "12-13", "13-14", "14-15", "15-16", "16-17", "17-18", "18-19","19-20", "20-21","21-22","22-23","23-24"),levels=c("0-1","1-2","2-3","3-4","4-5","5-6","6-7","7-8","8-9","9-10", "10-11","11-12", "12-13", "13-14", "14-15", "15-16", "16-17", "17-18", "18-19","19-20", "20-21","21-22","22-23","23-24"))
+#rate <- round((y-x)/ x * 100, 2)
+df_hourlytraffic <- data.frame(Time1, x,y,z)
+#df_hourlytraffic1 <- data.frame(Time1, x,y)
+#df_hourlytraffic1
+
+df_hourlytraffic_long <- melt(df_hourlytraffic)
+
+ggplot(df_hourlytraffic_long)+
+   geom_bar(aes(x = Time1, y = value, fill = variable), 
+           stat="identity", position = "dodge", width = 0.5) +
+  scale_fill_manual("traffic\n", values = c("#E69F00","#0072B2","#CC79A7"), 
+                    labels = c("total traffic Oct.2015", "total traffic Oct.2016","total traffic Oct.2017")) +
+  labs(x="\ntime",y="traffic\n") + transition_states(Time1, wrap = FALSE) +
+  shadow_mark()+
+  theme_bw(base_size = 7) 
+
+
+
+
+
+```
+
+
+Last but not least, since the Congestion Pricing Plan suggested that the car will be charged for $11 and the truck will be charged for $25. so I use another data set with the differnt types of car in the city of different hours in October from 2015 to 2017. I hoped that I can get an estimation of the amount of money they will raise through the paln. As we can see from the grapgs, auto still count as the big proportion of all the vehicles. The estimation I get roughly is around 0.2 billion dollars. The plan suggested that they will raise 1 bilion per year which is different from my calculation. Many factors play roles in this difference. first of all, it may be the press' exaggeration. It may encourages people to agree with this plan since the 1 billion dollars will be used toward the public. Secondly, the collection of data may have errors. When I cleaned up the data, I found a lot of NAs in the date. Thirdly, the month I chose may not be the busiest month of the year in NY. In the summer, I will assume that there will be more travels than other months so the count of cars may be higher. 
+From the technical point of view, I found an interesting package which is waffle. It would be cooler if I can use fontAwesome in my graph because it will replace the squares of my graphs with cars. However, I tried everything but I can't make it work. The last animation is because when I see the static stacked histogram can't present each categories clearly since there are 7 categories. So showing each category one by one will be much clearer. 
+```{r,echo=FALSE,warning=FALSE}
+traffic_class <- read.csv(file="/Users/xiaomengkong/Desktop/SPS/DATA608/FinalProjectData/Vehicle_Classification_Counts__2014-2018_.csv")
+#kable(head(traffic_class))
+#nrow(traffic_class)
+colnames(traffic_class)<- c("ID","Segment_ID","Roadway","From","To","Direction","Date","Type","AM01","AM12","AM23","AM34","AM45","AM56","AM67","AM78","AM89","AM910","AM1011","PM1112","PM1213","PM1314","PM1415","PM1516","PM1617","PM1718","PM1819","PM1920","PM2021","PM2122","PM2223","PM2324")
+traffic_class[,1:8]<-lapply(traffic_class[1:8],as.character)
+sapply(traffic_class,typeof)
+traffic_class15 <- traffic_class %>% filter(str_detect(traffic_class$Date,"2015"))
+#nrow(traffic_class15)
+
+#strings <- c("04/01","04/02","04/03","04/04","04/05","04/06","04/07","04/08","04/09","04/10","04/11","04/12","04/13","04/14","04/15")
+strings <- c("04/","05/","06/")
+traffic_class15_4_10 <- traffic_class15 %>% filter(str_detect(traffic_class15$Date,"^10/"))
+#kable(head(traffic_class15_4_10))
+
+#auto
+traffic_class15_4_10_auto <- traffic_class15_4_10 %>% filter(str_detect(traffic_class15_4_10$Type,"Auto"))
+#nrow(traffic_class15_4_10_auto)
+
+m1 <- as.matrix((traffic_class15_4_10_auto[9:32]))
+m1<- apply(m1,1,as.numeric)
+m1[is.na(m1)]<- round(mean(m1,na.rm=TRUE),2)
+
+auto<-rowSums(m1)
+auto_total<-sum(auto)
+auto_total
+
+
+
+
+
+#Taxi
+traffic_class15_4_10_Taxi <- traffic_class15_4_10 %>% filter(str_detect(traffic_class15_4_10$Type,"Taxis"))
+#nrow(traffic_class15_4_10_Taxi)
+m1 <- as.matrix((traffic_class15_4_10_Taxi[9:32]))
+m1<- apply(m1,1,as.numeric)
+m1[is.na(m1)]<- round(mean(m1,na.rm=TRUE),2)
+
+Taxi<-rowSums(m1)
+Taxi_total<-sum(Taxi)
+Taxi_total
+
+#Commercial
+traffic_class15_4_10_Commercial <- traffic_class15_4_10 %>% filter(str_detect(traffic_class15_4_10$Type,"Commercial"))
+#nrow(traffic_class15_4_10_Commercial)
+m1 <- as.matrix((traffic_class15_4_10_Commercial[9:32]))
+m1<- apply(m1,1,as.numeric)
+m1[is.na(m1)]<- round(mean(m1,na.rm=TRUE),2)
+
+Commercial<-rowSums(m1)
+Commercial_total<-sum(Commercial)
+Commercial_total
+
+#Medium Truck
+traffic_class15_4_10_MT <- traffic_class15_4_10 %>% filter(str_detect(traffic_class15_4_10$Type,"Medium Truck"))
+#nrow(traffic_class15_4_10_MT)
+m1 <- as.matrix((traffic_class15_4_10_MT[9:32]))
+m1<- apply(m1,1,as.numeric)
+m1[is.na(m1)]<- round(mean(m1,na.rm=TRUE),2)
+
+MT<-rowSums(m1)
+MT_total<-sum(MT)
+MT_total
+
+#Heavy Truck
+traffic_class15_4_10_HT <- traffic_class15_4_10 %>% filter(str_detect(traffic_class15_4_10$Type,"Heavy Truck"))
+#nrow(traffic_class15_4_10_HT)
+m1 <- as.matrix((traffic_class15_4_10_HT[9:32]))
+m1<- apply(m1,1,as.numeric)
+m1[is.na(m1)]<- round(mean(m1,na.rm=TRUE),2)
+
+HT<-rowSums(m1)
+HT_total<-sum(HT)
+HT_total
+
+#School Bus
+traffic_class15_4_10_SB <- traffic_class15_4_10 %>% filter(str_detect(traffic_class15_4_10$Type,"School Bus"))
+#nrow(traffic_class15_4_10_SB)
+m1 <- as.matrix((traffic_class15_4_10_SB[9:32]))
+m1<- apply(m1,1,as.numeric)
+m1[is.na(m1)]<- round(mean(m1,na.rm=TRUE),2)
+
+SB<-rowSums(m1)
+SB_total<-sum(SB)
+SB_total
+
+#Other Bus
+traffic_class15_4_10_OB <- traffic_class15_4_10 %>% filter(str_detect(traffic_class15_4_10$Type,"Other Bus"))
+#nrow(traffic_class15_4_10_OB)
+m1 <- as.matrix((traffic_class15_4_10_OB[9:32]))
+m1<- apply(m1,1,as.numeric)
+m1[is.na(m1)]<- round(mean(m1,na.rm=TRUE),2)
+
+OB<-rowSums(m1)
+OB_total<-sum(OB)
+OB_total
+
+Type_of_cars <- c("auto","Taxi","Commercial","Medium Truck","Heavy Truck","School Bus","Other Bus")
+Number_of_cars <- c(auto_total,Taxi_total,Commercial_total,MT_total,HT_total,SB_total,OB_total)
+df_2015 <- data.frame(Type_of_cars,Number_of_cars)
+df_2015$type_percent <- round(df_2015$Number_of_cars / sum(df_2015$Number_of_cars)*100)
+df_2015[[1,3]]<-76
+df_2015
+
+waffle(c(auto=76,Taxi=11,Commercial=6,Medium_Truck=3,Heavy_Truck=1,School_Bus=1,Other_Bus=2),rows=5,title="Oct.2015")
+
+#2016
+traffic_class16 <- traffic_class %>% filter(str_detect(traffic_class$Date,"2016"))
+traffic_class16_4_10 <- traffic_class16 %>% filter(str_detect(traffic_class16$Date,"^10/"))
+#kable(head(traffic_class15_4_10))
+
+#auto
+traffic_class16_4_10_auto <- traffic_class16_4_10 %>% filter(str_detect(traffic_class16_4_10$Type,"Auto"))
+#nrow(traffic_class15_4_10_auto)
+
+m1 <- as.matrix((traffic_class16_4_10_auto[9:32]))
+m1<- apply(m1,1,as.numeric)
+m1[is.na(m1)]<- round(mean(m1,na.rm=TRUE),2)
+
+auto<-rowSums(m1)
+auto_total<-sum(auto)
+auto_total
+
+
+
+
+
+#Taxi
+traffic_class16_4_10_Taxi <- traffic_class16_4_10 %>% filter(str_detect(traffic_class16_4_10$Type,"Taxis"))
+#nrow(traffic_class15_4_10_Taxi)
+m1 <- as.matrix((traffic_class16_4_10_Taxi[9:32]))
+m1<- apply(m1,1,as.numeric)
+m1[is.na(m1)]<- round(mean(m1,na.rm=TRUE),2)
+
+Taxi<-rowSums(m1)
+Taxi_total<-sum(Taxi)
+Taxi_total
+
+#Commercial
+traffic_class16_4_10_Commercial <- traffic_class16_4_10 %>% filter(str_detect(traffic_class16_4_10$Type,"Commercial"))
+#nrow(traffic_class15_4_10_Commercial)
+m1 <- as.matrix((traffic_class16_4_10_Commercial[9:32]))
+m1<- apply(m1,1,as.numeric)
+m1[is.na(m1)]<- round(mean(m1,na.rm=TRUE),2)
+
+Commercial<-rowSums(m1)
+Commercial_total<-sum(Commercial)
+Commercial_total
+
+#Medium Truck
+traffic_class16_4_10_MT <- traffic_class16_4_10 %>% filter(str_detect(traffic_class16_4_10$Type,"Medium Truck"))
+#nrow(traffic_class15_4_10_MT)
+m1 <- as.matrix((traffic_class16_4_10_MT[9:32]))
+m1<- apply(m1,1,as.numeric)
+m1[is.na(m1)]<- round(mean(m1,na.rm=TRUE),2)
+
+MT<-rowSums(m1)
+MT_total<-sum(MT)
+MT_total
+
+#Heavy Truck
+traffic_class16_4_10_HT <- traffic_class16_4_10 %>% filter(str_detect(traffic_class16_4_10$Type,"Heavy Truck"))
+#nrow(traffic_class15_4_10_HT)
+m1 <- as.matrix((traffic_class16_4_10_HT[9:32]))
+m1<- apply(m1,1,as.numeric)
+m1[is.na(m1)]<- round(mean(m1,na.rm=TRUE),2)
+
+HT<-rowSums(m1)
+HT_total<-sum(HT)
+HT_total
+
+#School Bus
+traffic_class16_4_10_SB <- traffic_class16_4_10 %>% filter(str_detect(traffic_class16_4_10$Type,"School Bus"))
+#nrow(traffic_class15_4_10_SB)
+m1 <- as.matrix((traffic_class16_4_10_SB[9:32]))
+m1<- apply(m1,1,as.numeric)
+m1[is.na(m1)]<- round(mean(m1,na.rm=TRUE),2)
+
+SB<-rowSums(m1)
+SB_total<-sum(SB)
+SB_total
+
+#Other Bus
+traffic_class16_4_10_OB <- traffic_class16_4_10 %>% filter(str_detect(traffic_class16_4_10$Type,"Other Bus"))
+#nrow(traffic_class15_4_10_OB)
+m1 <- as.matrix((traffic_class16_4_10_OB[9:32]))
+m1<- apply(m1,1,as.numeric)
+m1[is.na(m1)]<- round(mean(m1,na.rm=TRUE),2)
+
+OB<-rowSums(m1)
+OB_total<-sum(OB)
+OB_total
+
+Type_of_cars <- c("auto","Taxi","Commercial","Medium Truck","Heavy Truck","School Bus","Other Bus")
+Number_of_cars <- c(auto_total,Taxi_total,Commercial_total,MT_total,HT_total,SB_total,OB_total)
+df_2016 <- data.frame(Type_of_cars,Number_of_cars)
+df_2016$type_percent <- round(df_2016$Number_of_cars / sum(df_2016$Number_of_cars)*100)
+df_2016[[1,3]]<-68
+df_2016
+waffle(c(auto=68,Taxi=17,Commercial=7,Medium_Truck=4,Heavy_Truck=1,School_Bus=1,Other_Bus=2),rows=5,title="Oct.2016")
+#2017
+
+traffic_class17 <- traffic_class %>% filter(str_detect(traffic_class$Date,"2017"))
+traffic_class17_4_10 <- traffic_class17 %>% filter(str_detect(traffic_class17$Date,"^10/"))
+#kable(head(traffic_class15_4_10))
+
+#auto
+traffic_class17_4_10_auto <- traffic_class17_4_10 %>% filter(str_detect(traffic_class17_4_10$Type,"Auto"))
+#nrow(traffic_class15_4_10_auto)
+
+m1 <- as.matrix((traffic_class17_4_10_auto[9:32]))
+m1<- apply(m1,1,as.numeric)
+m1[is.na(m1)]<- round(mean(m1,na.rm=TRUE),2)
+
+auto<-rowSums(m1)
+auto_total<-sum(auto)
+auto_total
+
+
+
+
+
+#Taxi
+traffic_class17_4_10_Taxi <- traffic_class17_4_10 %>% filter(str_detect(traffic_class17_4_10$Type,"Taxis"))
+#nrow(traffic_class15_4_10_Taxi)
+m1 <- as.matrix((traffic_class17_4_10_Taxi[9:32]))
+m1<- apply(m1,1,as.numeric)
+m1[is.na(m1)]<- round(mean(m1,na.rm=TRUE),2)
+
+Taxi<-rowSums(m1)
+Taxi_total<-sum(Taxi)
+Taxi_total
+
+#Commercial
+traffic_class17_4_10_Commercial <- traffic_class17_4_10 %>% filter(str_detect(traffic_class17_4_10$Type,"Commercial"))
+#nrow(traffic_class15_4_10_Commercial)
+m1 <- as.matrix((traffic_class17_4_10_Commercial[9:32]))
+m1<- apply(m1,1,as.numeric)
+m1[is.na(m1)]<- round(mean(m1,na.rm=TRUE),2)
+
+Commercial<-rowSums(m1)
+Commercial_total<-sum(Commercial)
+Commercial_total
+
+#Medium Truck
+traffic_class17_4_10_MT <- traffic_class17_4_10 %>% filter(str_detect(traffic_class17_4_10$Type,"Medium Truck"))
+#nrow(traffic_class15_4_10_MT)
+m1 <- as.matrix((traffic_class17_4_10_MT[9:32]))
+m1<- apply(m1,1,as.numeric)
+m1[is.na(m1)]<- round(mean(m1,na.rm=TRUE),2)
+
+MT<-rowSums(m1)
+MT_total<-sum(MT)
+MT_total
+
+#Heavy Truck
+traffic_class17_4_10_HT <- traffic_class17_4_10 %>% filter(str_detect(traffic_class17_4_10$Type,"Heavy Truck"))
+#nrow(traffic_class15_4_10_HT)
+m1 <- as.matrix((traffic_class17_4_10_HT[9:32]))
+m1<- apply(m1,1,as.numeric)
+m1[is.na(m1)]<- round(mean(m1,na.rm=TRUE),2)
+
+HT<-rowSums(m1)
+HT_total<-sum(HT)
+HT_total
+
+#School Bus
+traffic_class17_4_10_SB <- traffic_class17_4_10 %>% filter(str_detect(traffic_class17_4_10$Type,"School Bus"))
+#nrow(traffic_class15_4_10_SB)
+m1 <- as.matrix((traffic_class17_4_10_SB[9:32]))
+m1<- apply(m1,1,as.numeric)
+m1[is.na(m1)]<- round(mean(m1,na.rm=TRUE),2)
+
+SB<-rowSums(m1)
+SB_total<-sum(SB)
+SB_total
+
+#Other Bus
+traffic_class17_4_10_OB <- traffic_class17_4_10 %>% filter(str_detect(traffic_class17_4_10$Type,"Other Bus"))
+#nrow(traffic_class15_4_10_OB)
+m1 <- as.matrix((traffic_class17_4_10_OB[9:32]))
+m1<- apply(m1,1,as.numeric)
+m1[is.na(m1)]<- round(mean(m1,na.rm=TRUE),2)
+
+OB<-rowSums(m1)
+OB_total<-sum(OB)
+OB_total
+
+Type_of_cars <- c("auto","Taxi","Commercial","Medium Truck","Heavy Truck","School Bus","Other Bus")
+Number_of_cars <- c(auto_total,Taxi_total,Commercial_total,MT_total,HT_total,SB_total,OB_total)
+df_2017 <- data.frame(Type_of_cars,Number_of_cars)
+df_2017$type_percent <- round(df_2017$Number_of_cars / sum(df_2017$Number_of_cars)*100)
+#df_2015[[1,3]]<-68
+df_2017
+waffle(c(auto=80,Taxi=7,Commercial=5,Medium_Truck=3,Heavy_Truck=1,School_Bus=2,Other_Bus=2),rows=5,title="Oct.2017")
+
+
+#iron(
+ # waffle(c(auto=76,Taxi=11,Commercial=6,Medium_Truck=3,Heavy_Truck=1,School_Bus=1,Other_Bus=2),rows=5,title="Oct.2015"),
+ # waffle(c(auto=68,Taxi=17,Commercial=7,Medium_Truck=4,Heavy_Truck=1,School_Bus=1,Other_Bus=2),rows=5,title="Oct.2016"),
+ # waffle(c(auto=80,Taxi=7,Commercial=5,Medium_Truck=3,Heavy_Truck=1,School_Bus=2,Other_Bus=2),rows=5,title="Oct.2017")
+#)
+
+
+
+#estimation_fee_car <- round (12*((df_2015[[1,2]]+df_2016[[1,2]]+df_2017[[1,2]])/3 +(df_2015[[2,2]]+df_2016[[2,2]]+df_2017[[2,2]])/3+
+                       # (df_2015[[3,2]]+df_2016[[3,2]]+df_2017[[3,2]])/3))
+estimation_fee_auto <- round (12*((df_2015[[1,2]]+df_2016[[1,2]]+df_2017[[1,2]])/3))
+estimation_fee_taxi <- round(12*(df_2015[[2,2]]+df_2016[[2,2]]+df_2017[[2,2]])/3)
+estimation_fee_commercial <-round(12*(df_2015[[3,2]]+df_2016[[3,2]]+df_2017[[3,2]])/3)
+
+#estimation_fee_truck <- round (25*((df_2015[[4,2]]+df_2016[[4,2]]+df_2017[[4,2]])/3 +(df_2015[[5,2]]+df_2016[[5,2]]+df_2017[[5,2]])/3+
+                                    # (df_2015[[6,2]]+df_2016[[6,2]]+df_2017[[6,2]])/3+(df_2015[[7,2]]+df_2016[[7,2]]+df_2017[[7,2]])/3))
+      
+estimation_fee_MT <-round(25*(df_2015[[4,2]]+df_2016[[4,2]]+df_2017[[4,2]])/3)
+estimation_fee_HT <-round(25*(df_2015[[5,2]]+df_2016[[5,2]]+df_2017[[5,2]])/3)
+estimation_fee_SB <-round(25*(df_2015[[6,2]]+df_2016[[6,2]]+df_2017[[6,2]])/3)
+estimation_fee_OB <-round(25*(df_2015[[7,2]]+df_2016[[7,2]]+df_2017[[7,2]])/3)
+
+estimation_fee_annual <- 12*(estimation_fee_auto+estimation_fee_taxi+estimation_fee_commercial+estimation_fee_MT+estimation_fee_HT+estimation_fee_SB+estimation_fee_OB)
+estimation_fee_annual
+
+
+Type_of_cars <- c("auto","Taxi","Commercial","Medium Truck","Heavy Truck","School Bus","Other Bus")
+estimation_fee_charge <- c(estimation_fee_auto,estimation_fee_taxi,estimation_fee_commercial,estimation_fee_MT,estimation_fee_HT,estimation_fee_SB,estimation_fee_OB)
+df_estimation <-  data.frame(Type_of_cars,estimation_fee_charge)
+df_estimation
+
+theme_set(theme_classic())
+
+# Histogram on a Categorical variable
+g <- ggplot(df_estimation, aes(x= 1,y=estimation_fee_charge ,fill=Type_of_cars,label=estimation_fee_charge))
+g + geom_bar(stat="identity",width=0.5)+
+  geom_text(size = 3, position = position_stack(vjust = 0.5))+ 
+  transition_manual(Type_of_cars)
+
+
+
+
+
+
+
+```
+
+In conclustion, being a New Yorker, whether I like the Congestion Plan or not, I think it has more advantages than disadvantages. The traffic is always bad in the city, with the plan, people may find alternative ways to get into city maybe with carpool, public transportation and so on to avoid fees but ultimately, it will be better for the enviroment and people can have a better place to enjoy and appreciate.  
